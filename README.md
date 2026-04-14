@@ -1,122 +1,166 @@
-# 👁 Argos — The Hundred-Eyed Guardian
+# Argos: Advanced File Integrity Monitoring Specification
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python: 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![AI: Groq](https://img.shields.io/badge/AI-Groq%20Llama%203.3-cyan.svg)](https://groq.com/)
+Argos is a high-assurance File Integrity Monitoring (FIM) system designed for security-critical environments. It employs cryptographic hash chaining and behavioral analysis to detect, classify, and explain unauthorized modifications to the filesystem perimeter.
 
-**Argos** is a production-quality File Integrity Monitoring (FIM) tool designed for modern infrastructure. Named after the giant from Greek mythology who had a hundred eyes, Argos is always watching, using cryptographic chaining and AI-powered behavioral analysis to protect your system's perimeter.
+Developed with a focus on audit trail integrity, Argos ensures that the monitoring process itself remains tamper-evident through a chained ledger architecture.
 
 ---
 
-## ✨ Features at a Glance
+## Table of Contents
 
-| Feature | Description |
-| :--- | :--- |
-| **🛡 Cryptographic Hash Chain** | Tamper-evident audit ledger using SHA-256/512. |
-| **🧠 AI Behavioral Analysis** | Integration with Groq (Llama 3.3) for semantic anomaly detection. |
-| **📂 Semantic Diffing** | Understands code structural changes (Imports, Functions) via AST analysis. |
-| **⏱ Continuous Watch** | High-performance background monitoring with configurable intervals. |
-| **📊 Multi-Format Reports** | Export your findings in Terminal (Rich), JSON, CSV, or HTML. |
+1. [Architecture Overview](#architecture-overview)
+2. [Technical Specifications](#technical-specifications)
+3. [Installation and Deployment](#installation-and-deployment)
+4. [Command Line Interface](#command-line-interface)
+5. [Intelligent Classification Model](#intelligent-classification-model)
+6. [Behavioral Fingerprinting](#behavioral-fingerprinting)
+7. [System Configuration](#system-configuration)
+8. [Audit Ledger Integrity](#audit-ledger-integrity)
+9. [License](#license)
 
 ---
 
-## 🧭 Navigation Guide
+## Architecture Overview
 
-<table width="100%">
-  <tr>
-    <td width="30%" valign="top">
-      <h3>GUIDE</h3>
-      <ul>
-        <li><a href="GUIDE.md#🏛-how-it-works">How It Works</a></li>
-        <li><a href="GUIDE.md#🚀-installation">Installation</a></li>
-        <li><a href="GUIDE.md#⚙️-configuration">Configuration</a></li>
-        <li><a href="GUIDE.md#👁-the-ai-eye-groq-integration">The AI "Eye"</a></li>
-      </ul>
-      <h3>COMMANDS</h3>
-      <ul>
-        <li><code>argos init</code></li>
-        <li><code>argos check</code></li>
-        <li><code>argos watch</code></li>
-        <li><code>argos report</code></li>
-        <li><code>argos verify-chain</code></li>
-      </ul>
-    </td>
-    <td width="70%" valign="top">
-      <h3>🚀 Quick Start</h3>
-      <p>Initialize your first baseline and start monitoring in seconds.</p>
-      <pre><code># Install Argos
+Argos operates on a stateless-scan/stateful-comparison model. The system establishes a "Baseline" by computing immutable fingerprints for all target assets. Subsequent "Checks" compare the current environment against this baseline to identify drifts.
+
+### Operation Pipeline
+1. **Baseline Initialization**: Recursive traversal of the target directory to establish cryptographic and behavioral identity.
+2. **Snapshot Comparison**: Delta analysis between the active state and a stored baseline.
+3. **Semantic Inspection**: Deep analysis of code structural changes using Abstract Syntax Trees (AST).
+4. **Behavioral Classification**: Heuristic evaluation of changes to determine intent and risk.
+5. **Ledger Append**: Recording the event in an append-only, cryptographically chained audit log.
+
+---
+
+## Technical Specifications
+
+### Cryptographic Foundation
+Argos supports SHA-256 and SHA-512 algorithms for content hashing. The selection is configurable based on the required collision resistance and performance profiles of the target environment.
+
+### Tamper-Evident Ledger
+The audit log (Ledger) is implemented as a hash chain. Each entry $N$ contains a hash of its own data concatenated with the hash of entry $N-1$. This ensures that any modification, deletion, or reordering of the audit history results in a detectable break in the chain.
+
+---
+
+## Installation and Deployment
+
+### Requirements
+- Python 3.8 or higher
+- SQLite 3.x
+
+### Standard Installation
+Install the package directly from the repository source:
+```bash
 pip install git+https://github.com/youruser/argos.git
+```
 
-# Establish a "known-good" baseline
-argos init /path/to/project --name v1.0
-
-# Check for unauthorized changes
-argos check /path/to/project --explain</code></pre>
-    </td>
-  </tr>
-</table>
-
----
-
-## 🧠 Intelligent Classification
-
-Argos doesn't just watch for changes; it understands them. Every modification is passed through a multi-stage classification engine that assigns a **Severity Tag** based on behavioral risk.
-
-### 🔴 CRITICAL
-*High-risk anomalies that require immediate investigation.*
-- **System Tampering**: Modifications in protected directories like `/etc/`, `/bin/`, or Windows `System32`.
-- **Executable Modification**: Any change to binary files or executable scripts (validated via binary signatures and extensions).
-- **Risky Logic (Python)**: Addition of dangerous functions like `eval()`, `exec()`, or `os.system()` detected via AST analysis.
-- **Entropy Spikes**: Sudden increases in data randomness (Delta > 2.0), typically indicating **ransomware encryption** or malware packing.
-
-### 🟡 SUSPICIOUS
-*Unusual patterns that warrant manual review.*
-- **Secret Access**: Modifications to files containing keywords like `auth`, `token`, `key`, `password`, or `.env`.
-- **Network Exfiltration**: Addition of connectivity modules (e.g., `socket`, `requests`, `httpx`) to code that previously lacked them.
-- **Moderate Shifts**: Changes in entropy between 1.0 and 2.0, suggesting obfuscation or large data injections.
-
-### 🟢 ROUTINE
-*Normal development and maintenance activity.*
-- Documentation updates, docstring changes, or standard refactoring that doesn't trigger security heuristics.
+### Development/Source Deployment
+For contributors or environments requiring source modifications:
+```bash
+git clone https://github.com/youruser/argos.git
+cd argos
+pip install -e .
+```
 
 ---
 
-## 🔍 Behavioral Fingerprinting
+## Command Line Interface
 
-Argos uses advanced techniques to look "inside" files rather than just comparing hashes.
+### argos init [DIRECTORY]
+Establishes a baseline snapshot for the specified directory.
+- `--name [NAME]`: Identifier for the baseline (default: "default").
+- `--algo [sha256|sha512]`: Selection of cryptographic hashing algorithm.
+- `--db [PATH]`: Path to the SQLite baseline database.
 
-### 📊 Shannon Entropy Analysis
-Argos calculates the randomness of file contents on a scale of 0.0 to 8.0.
-- **Low (0-4)**: Structured text, source code.
-- **High (6-8)**: Encrypted data, compressed archives, or compiled binaries.
-- **Detection**: By tracking entropy shifts over time, Argos can detect ransomware even if the file extension remains unchanged.
+### argos check [DIRECTORY]
+Performs a comparison between the active filesystem and a baseline.
+- `--baseline [NAME]`: Specifies the baseline identifier to use for comparison.
+- `--explain`: Enables AI-assisted semantic analysis of modifications (requires GROQ_API_KEY).
+- `--output [terminal|json|csv|html]`: Sets the report serialization format.
 
-### 🌳 Python AST Analysis
-For `.py` files, Argos performs deep semantic inspection:
-- **Function/Class Tracking**: Detects when new functional blocks are added.
-- **Import Auditing**: Keeps a ledger of third-party dependencies used by the script.
-- **Call Graph Inspection**: Flags "risky" function calls that could be used for remote code execution.
+### argos watch [DIRECTORY]
+Initiates continuous monitoring mode.
+- `--interval [SECONDS]`: Frequency of recursive scans (default: 60 seconds).
+- `--explain`: Maintains AI-assisted analysis for real-time monitoring.
 
-### 🪟 Cross-Platform Precision (Windows Support)
-Unlike standard tools that rely on the unreliable Unix `execute` bit on Windows, Argos uses **Signature-based Detection**:
-- **Binary Check**: Inspects file headers for null-byte signatures.
-- **Extension Awareness**: Recognizes platform-specific executables (`.exe`, `.bat`, `.ps1`, `.vbs`).
-- **Path Normalization**: Ensures that security rules work identically across Windows and Linux environments.
+### argos update [DIRECTORY]
+Promotes the current filesystem state to the baseline. Intended for use after authorized deployments or system updates.
 
----
+### argos report
+Displays the historical audit ledger.
 
-## 🔒 Security In-Depth
-
-Argos is built for environments where the audit trail itself might be an attack target. The **Tamper-Evident Ledger** ensures that if an attacker gains access to the system and tries to delete the logs of their file modifications, the cryptographic chain will break, alerting administrators immediately during the next `verify-chain` check.
-
-[Read the Security Architecture →](GUIDE.md#🔒-security-architecture)
+### argos verify-chain
+Performs a full cryptographic validation of the audit ledger chain.
 
 ---
 
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## Intelligent Classification Model
+
+Argos utilizes a multi-factor classification engine to assign risk severity to detected modifications.
+
+### CRITICAL (Risk Level: High)
+Modifications categorized as Critical indicate a high probability of malicious intent or severe system instability.
+- **System Perimeter Breach**: Modifications within protected directories (e.g., /etc, /bin, System32).
+- **Executable Entropy/Signature Drift**: Changes to binaries or executable scripts.
+- **Risky Logic Injections**: Addition of dynamic execution calls (exec, eval, os.system) in Python code.
+- **Ransomware Indicators**: Entropy shifts exceeding 2.0, suggesting unauthorized encryption.
+
+### SUSPICIOUS (Risk Level: Medium)
+Modifications that represent unusual behavior requiring manual audit.
+- **Credential/Secret Access**: Modifications to files containing security-sensitive keywords (token, key, password).
+- **Network Capability Addition**: Import of networking modules into scripts previously lacking network access.
+- **Subtle Obfuscation**: Entropy shifts between 1.0 and 2.0.
+
+### ROUTINE (Risk Level: Low)
+Standard maintenance activity, documentation updates, or non-security-sensitive code refactoring.
 
 ---
-<p align="center">
-  Built with ❤️ by the z35tyyyy
-</p>
+
+## Behavioral Fingerprinting
+
+### Shannon Entropy Analysis
+Argos measures the randomness of file data to detect encrypted or obfuscated payloads.
+- **Range 0.0-4.0**: Patterned data (source code, text).
+- **Range 6.0-8.0**: Compressed, encrypted, or packed binary data.
+
+### AST-Based Logic Tracking
+For Python assets, Argos utilizes the `ast` module to perform non-textual diffing. This allows the system to distinguish between harmless formatting changes and significant functional logic shifts.
+
+---
+
+## System Configuration
+
+### .argos.yml
+A project-level configuration file for defining scan defaults.
+```yaml
+algorithm: sha512
+exclude_patterns:
+  - "logs/*"
+  - "*.tmp"
+watch_interval: 30
+```
+
+### .argosignore
+Git-style ignore patterns for excluding specific assets from the monitoring perimeter.
+```text
+node_modules/
+venv/
+*.log
+```
+
+---
+
+## Audit Ledger Integrity
+
+Argos provides a mathematical guarantee of audit trail continuity. Use the `verify-chain` command to ensure that the historical record of file modifications has not been tampered with.
+
+---
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for details.
+
+---
+
+Built by the Argos Contributors.

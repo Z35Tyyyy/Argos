@@ -48,7 +48,7 @@ def print_banner():
     console.print(Panel(
         banner_text,
         border_style="cyan",
-        subtitle="[bold blue]Documentation:[/bold blue] [link=https://github.com/youruser/argos/blob/main/GUIDE.md]GUIDE.md[/link]",
+        subtitle="[bold blue]Documentation:[/bold blue] [link=https://github.com/youruser/argos/blob/main/README.md]README.md[/link]",
         subtitle_align="right"
     ))
 
