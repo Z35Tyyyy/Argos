@@ -54,7 +54,7 @@ def print_banner():
 
 
 @click.group()
-@click.version_option()
+@click.version_option(package_name="argos-fim")
 def cli():
     """Argos: File Integrity Monitoring with AI and Behavioral Fingerprinting."""
     pass
