@@ -23,7 +23,7 @@ from rich.text import Text
 from .config import ArgosConfig, load_config_file
 from .database import DatabaseManager, ChangeRecord, ScanRecord
 from .scanner import scan_directory
-from . import reporter, classifier, ai_explain
+from . import reporter, classifier, ai_explain, __version__
 import schedule
 import time
 
@@ -54,7 +54,7 @@ def print_banner():
 
 
 @click.group()
-@click.version_option(package_name="argos-fim")
+@click.version_option(version=__version__)
 def cli():
     """Argos: File Integrity Monitoring with AI and Behavioral Fingerprinting."""
     pass
