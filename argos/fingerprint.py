@@ -19,6 +19,26 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from .database import ScanRecord
 
 
+def is_binary(file_path: str) -> bool:
+    """
+    Check if a file is binary by looking for null bytes in the first 1KB.
+    """
+    try:
+        with open(file_path, "rb") as f:
+            chunk = f.read(1024)
+            return b"\0" in chunk
+    except OSError:
+        return False
+
+
+def is_executable_ext(file_path: str) -> bool:
+    """
+    Check if a file has a known executable extension (mostly for Windows).
+    """
+    exts = {".exe", ".bat", ".cmd", ".com", ".ps1", ".vbs", ".msi", ".py"}
+    return os.path.splitext(file_path)[1].lower() in exts
+
+
 def calculate_entropy(file_path: str) -> float:
     """
     Calculate Shannon Entropy of a file (0.0 to 8.0).
@@ -144,7 +164,14 @@ def fingerprint_file(file_path: str, record: ScanRecord) -> ScanRecord:
     # Basic data
     record.entropy = calculate_entropy(file_path)
     record.printable_string_count = count_printable_strings(file_path)
-    record.is_executable = os.access(file_path, os.X_OK)
+    
+    # Improved executable detection (especially for Windows)
+    if os.name == "nt":
+        # On Windows, os.access(X_OK) is synonymous with R_OK.
+        # We supplement with extension and binary content checks.
+        record.is_executable = is_executable_ext(file_path) or is_binary(file_path)
+    else:
+        record.is_executable = os.access(file_path, os.X_OK)
     
     mtype, _ = mimetypes.guess_type(file_path)
     record.file_type = mtype or "application/octet-stream"

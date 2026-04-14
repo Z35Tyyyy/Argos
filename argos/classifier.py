@@ -34,9 +34,11 @@ def classify_change(
             reasons.append("Executable file modified")
             severity = "CRITICAL"
             
-        # Sensitive paths (Linux-centric)
-        path_lower = change.path.lower()
-        if any(p in path_lower for p in ["/etc/", "/bin/", "/usr/bin/", "/sbin/"]):
+        # Sensitive paths
+        # Normalize to forward slashes for cross-platform matching
+        path_norm = change.path.lower().replace("\\", "/")
+        sensitive_dirs = ["/etc/", "/bin/", "/usr/bin/", "/sbin/", "/windows/system32/", "/syswow64/"]
+        if any(p in path_norm for p in sensitive_dirs):
             reasons.append("Modification in system configuration/binary directory")
             severity = "CRITICAL"
 
@@ -67,16 +69,19 @@ def classify_change(
                 reasons.append(f"Risky calls added: {', '.join(added_execs)}")
                 severity = "CRITICAL"
 
-    # Permissions changed to executable
-    if change.change_type == "META ONLY" or change.change_type == "MODIFIED":
+    # Permissions changed to executable (mainly for Unix)
+    if os.name != "nt" and (change.change_type == "META ONLY" or change.change_type == "MODIFIED"):
         if change.old_permissions and change.new_permissions:
-            # Check if execute bit was added
-            old_p = int(change.old_permissions, 8)
-            new_p = int(change.new_permissions, 8)
-            exec_bits = 0o111
-            if (not (old_p & exec_bits)) and (new_p & exec_bits):
-                reasons.append("File became executable (new X bit)")
-                severity = "CRITICAL"
+            try:
+                # Check if execute bit was added
+                old_p = int(change.old_permissions, 8)
+                new_p = int(change.new_permissions, 8)
+                exec_bits = 0o111
+                if (not (old_p & exec_bits)) and (new_p & exec_bits):
+                    reasons.append("File became executable (new X bit)")
+                    severity = "CRITICAL"
+            except (ValueError, TypeError):
+                pass
 
     # 2. Suspicious Heuristics
     # ------------------------

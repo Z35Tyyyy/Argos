@@ -98,7 +98,8 @@ def _default_db_path() -> Path:
     """Return the default path for the Argos database file."""
     env = os.environ.get("ARGOS_DB")
     if env:
-        return Path(env)
+        # Resolve to sanitize input and prevent path traversal
+        return Path(env).expanduser().resolve()
     return Path.home() / ".argos" / "argos.db"
 
 
@@ -119,7 +120,11 @@ class DatabaseManager:
     """Context-manager wrapper around the Argos SQLite database."""
 
     def __init__(self, db_path: Optional[str] = None) -> None:
-        self.db_path = Path(db_path) if db_path else _default_db_path()
+        if db_path:
+            self.db_path = Path(db_path).expanduser().resolve()
+        else:
+            self.db_path = _default_db_path()
+
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn: Optional[sqlite3.Connection] = None
 
