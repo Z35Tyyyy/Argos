@@ -1,3 +1,25 @@
+# Argos: Advanced File Integrity Monitoring Specification
+
+Argos is a high-assurance File Integrity Monitoring (FIM) system designed for security-critical environments. It employs cryptographic hash chaining and behavioral analysis to detect, classify, and explain unauthorized modifications to the filesystem perimeter.
+
+Developed with a focus on audit trail integrity, Argos ensures that the monitoring process itself remains tamper-evident through a chained ledger architecture.
+
+---
+
+## Table of Contents
+
+1. [Quick Start](#quick-start)
+2. [Architecture Overview](#architecture-overview)
+3. [Technical Specifications](#technical-specifications)
+4. [Installation and Deployment](#installation-and-deployment)
+5. [Global Configuration](#global-configuration)
+6. [Command Line Interface](#command-line-interface)
+7. [Intelligent Classification Model](#intelligent-classification-model)
+8. [Behavioral Fingerprinting](#behavioral-fingerprinting)
+9. [System Configuration](#system-configuration)
+10. [Audit Ledger Integrity](#audit-ledger-integrity)
+11. [License](#license)
+
 ---
 
 ## Quick Start
