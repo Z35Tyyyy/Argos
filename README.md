@@ -78,20 +78,29 @@ Performs a comparison between the active filesystem and a baseline.
 - `--baseline [NAME]`: Specifies the baseline identifier to use for comparison.
 - `--explain`: Enables AI-assisted semantic analysis of modifications (requires GROQ_API_KEY).
 - `--output [terminal|json|csv|html]`: Sets the report serialization format.
+- `--db [PATH]`: Path to the SQLite baseline database.
 
 ### argos watch [DIRECTORY]
 Initiates continuous monitoring mode.
+- `--baseline [NAME]`: Specifies the baseline identifier to use.
 - `--interval [SECONDS]`: Frequency of recursive scans (default: 60 seconds).
-- `--explain`: Maintains AI-assisted analysis for real-time monitoring.
+- `--explain`: Enables AI-assisted analysis for real-time monitoring.
+- `--db [PATH]`: Path to the SQLite baseline database.
 
 ### argos update [DIRECTORY]
 Promotes the current filesystem state to the baseline. Intended for use after authorized deployments or system updates.
+- `--baseline [NAME]`: Specifies the baseline identifier to update.
+- `--db [PATH]`: Path to the SQLite baseline database.
 
 ### argos report
 Displays the historical audit ledger.
+- `--db [PATH]`: Path to the SQLite baseline database.
+- `--since [TIMESTAMP]`: Filter entries by ISO timestamp.
+- `--format [terminal|json|html]`: Serialization format for the ledger report.
 
 ### argos verify-chain
 Performs a full cryptographic validation of the audit ledger chain.
+- `--db [PATH]`: Path to the SQLite baseline database.
 
 ---
 
