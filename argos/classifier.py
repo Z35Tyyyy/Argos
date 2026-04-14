@@ -13,6 +13,28 @@ from typing import List, Optional
 
 from .database import ChangeRecord, ScanRecord
 
+RISK_PATTERNS = [
+    "powershell", "cmd.exe /c", "invoke-expression", "iex", "downloadstring",
+    "nc -e", "sh -i", "/dev/tcp/", "bash -i", "base64", "eval(", "exec("
+]
+
+
+def _has_malicious_patterns(file_path: str) -> List[str]:
+    """Scan the first 1KB of a file for high-risk patterns."""
+    found: List[str] = []
+    if not os.path.exists(file_path) or os.path.isdir(file_path):
+        return found
+
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read(1024).lower()
+            for pattern in RISK_PATTERNS:
+                if pattern in content:
+                    found.append(pattern)
+    except Exception:
+        pass
+    return found
+
 
 def classify_change(
     change: ChangeRecord,
@@ -102,6 +124,17 @@ def classify_change(
             if net_added:
                 change.new_imports = list(added_imps)
                 reasons.append(f"Network capability added: {', '.join(net_added)}")
+                severity = "SUSPICIOUS"
+
+        # 3. Content-Based Heuristics (New)
+        # --------------------------------
+        risk_hits = _has_malicious_patterns(change.path)
+        if risk_hits:
+            reasons.append(f"High-risk patterns detected in content: {', '.join(risk_hits)}")
+            # If it's already suspicious, upgrade to CRITICAL
+            if severity == "SUSPICIOUS":
+                severity = "CRITICAL"
+            else:
                 severity = "SUSPICIOUS"
 
     # Default to ROUTINE

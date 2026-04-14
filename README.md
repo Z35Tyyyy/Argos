@@ -1,22 +1,21 @@
-# Argos: Advanced File Integrity Monitoring Specification
-
-Argos is a high-assurance File Integrity Monitoring (FIM) system designed for security-critical environments. It employs cryptographic hash chaining and behavioral analysis to detect, classify, and explain unauthorized modifications to the filesystem perimeter.
-
-Developed with a focus on audit trail integrity, Argos ensures that the monitoring process itself remains tamper-evident through a chained ledger architecture.
-
 ---
 
-## Table of Contents
+## Quick Start
 
-1. [Architecture Overview](#architecture-overview)
-2. [Technical Specifications](#technical-specifications)
-3. [Installation and Deployment](#installation-and-deployment)
-4. [Command Line Interface](#command-line-interface)
-5. [Intelligent Classification Model](#intelligent-classification-model)
-6. [Behavioral Fingerprinting](#behavioral-fingerprinting)
-7. [System Configuration](#system-configuration)
-8. [Audit Ledger Integrity](#audit-ledger-integrity)
-9. [License](#license)
+Once Argos is installed, follow this three-step methodology to secure a directory:
+
+1.  **Initialize the Baseline**: Establish the "Known-Good" state of your target directory.
+    ```bash
+    argos init /path/to/project --name v1.0
+    ```
+2.  **Continuous Monitoring**: Initiate the Watch engine to detect real-time drifts.
+    ```bash
+    argos watch /path/to/project
+    ```
+3.  **Audit and Explain**: Perform a deep-audit with AI-assisted classification of anomalies.
+    ```bash
+    argos check /path/to/project --explain
+    ```
 
 ---
 
@@ -59,9 +58,57 @@ pip install git+https://github.com/Z35Tyyyy/Argos.git
 For contributors or environments requiring source modifications:
 ```bash
 git clone https://github.com/Z35Tyyyy/Argos.git
-cd argos
+cd Argos
 pip install -e .
 ```
+
+### Recommended Deployment (Isolated Environment)
+To avoid system-wide dependency conflicts and ensure binary availability on Windows, it is strongly recommended to use a Python Virtual Environment:
+
+1.  **Initialize Environment**:
+    ```bash
+    python -m venv venv
+    ```
+2.  **Activation**:
+    *   **PowerShell**: `.\venv\Scripts\Activate.ps1`
+    *   **CMD**: `.\venv\Scripts\activate.bat`
+    *   **Linux/macOS**: `source venv/bin/activate`
+3.  **Local Installation**:
+    ```bash
+    pip install .
+    ```
+
+---
+
+---
+
+## Global Configuration
+
+### Groq AI Integration
+To enable the AI-assisted explanation feature (`--explain`), you must provide a valid Groq API key. Argos looks for this key in the `GROQ_API_KEY` environment variable.
+
+#### Temporary (Session-only)
+##### Windows (PowerShell)
+```powershell
+$env:GROQ_API_KEY = "your_api_key_here"
+```
+
+##### Windows (CMD)
+```cmd
+set GROQ_API_KEY=your_api_key_here
+```
+
+##### Unix/macOS (Bash/Zsh)
+```bash
+export GROQ_API_KEY="your_api_key_here"
+```
+
+#### Persistent Setup (Windows)
+1. Search for **Environment Variables** in the Start Menu.
+2. Under "User variables", click **New**.
+3. Variable name: `GROQ_API_KEY`.
+4. Variable value: Paste your key from [console.groq.com](https://console.groq.com).
+5. Restart your terminal.
 
 ---
 
