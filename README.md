@@ -52,13 +52,13 @@ The audit log (Ledger) is implemented as a hash chain. Each entry $N$ contains a
 ### Standard Installation
 Install the package directly from the repository source:
 ```bash
-pip install git+https://github.com/youruser/argos.git
+pip install git+https://github.com/Z35Tyyyy/Argos.git
 ```
 
 ### Development/Source Deployment
 For contributors or environments requiring source modifications:
 ```bash
-git clone https://github.com/youruser/argos.git
+git clone https://github.com/Z35Tyyyy/Argos.git
 cd argos
 pip install -e .
 ```
